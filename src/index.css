@@ -1,0 +1,156 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-paper: #F2E8D2;
+    --color-cream: #F8F1E4;
+    --color-ivory: #E7D9BE;
+    --color-dusty-rose: #D98D9C;
+    --color-blush: #F0B7C3;
+    --color-rose: #E6A0B0;
+    --color-burgundy: #70434B;
+    --color-sage: #A4AE8E;
+    --color-olive: #81856A;
+    --color-dark-text: #493F39;
+  }
+
+  body {
+    background-color: var(--color-cream);
+    color: var(--color-dark-text);
+    font-family: var(--font-body, 'Prompt', sans-serif);
+    background-image: 
+      radial-gradient(circle at 50% 50%, rgba(248, 241, 228, 0.95), rgba(231, 217, 190, 0.65)),
+      repeating-radial-gradient(circle at 20% 30%, rgba(112, 67, 75, 0.02) 0, rgba(112, 67, 75, 0.02) 2px, transparent 2px, transparent 6px);
+    background-attachment: fixed;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+:root {
+  --font-display: 'Prompt', 'Cormorant Garamond', 'Noto Serif Thai', Georgia, serif;
+  --font-handwriting: 'Charm', 'Pinyon Script', cursive;
+  --font-body: 'Prompt', 'Lora', 'Noto Serif Thai', Georgia, serif;
+  --font-sans: 'Prompt', 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+/* Custom Font Utilities with dynamic font support */
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-handwriting {
+  font-family: var(--font-handwriting);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+.font-sans-clean {
+  font-family: var(--font-sans);
+}
+
+/* Vintage Paper & Stamp effects */
+.paper-shadow {
+  box-shadow: 
+    0 4px 6px -1px rgba(73, 63, 57, 0.08),
+    0 12px 24px -4px rgba(73, 63, 57, 0.12),
+    0 1px 2px 0 rgba(73, 63, 57, 0.05);
+}
+
+.paper-card {
+  background-color: #FAF6ED;
+  border: 1px solid rgba(164, 174, 142, 0.25);
+  box-shadow: 
+    0 2px 8px rgba(73, 63, 57, 0.06),
+    0 16px 32px rgba(73, 63, 57, 0.08);
+}
+
+.washi-tape {
+  background: rgba(240, 183, 195, 0.45);
+  border-left: 2px dashed rgba(217, 141, 156, 0.6);
+  border-right: 2px dashed rgba(217, 141, 156, 0.6);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+/* Rotating tape spool animation */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-tape-spin {
+  animation: spin-slow 2.4s linear infinite;
+}
+
+.animate-tape-spin-reverse {
+  animation: spin-slow 2.4s linear infinite reverse;
+}
+
+/* Floating gentle petals */
+@keyframes float-petal {
+  0% {
+    transform: translateY(0px) rotate(0deg) scale(0.9);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.85;
+  }
+  85% {
+    opacity: 0.75;
+  }
+  100% {
+    transform: translateY(110vh) rotate(360deg) scale(1.05);
+    opacity: 0;
+  }
+}
+
+/* Envelope 3D fold perspective */
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+/* Gentle pulse glow for romantic touches */
+@keyframes warm-glow {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(1.03);
+  }
+}
+
+.animate-warm-glow {
+  animation: warm-glow 4s ease-in-out infinite;
+}
+
+/* Gentle natural rose sway in wind */
+@keyframes rose-sway {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  35% {
+    transform: rotate(1.8deg) translateY(-1px);
+  }
+  70% {
+    transform: rotate(-1.5deg) translateY(0.5px);
+  }
+}
+
+.animate-rose-sway {
+  animation: rose-sway 5.4s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+

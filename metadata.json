@@ -1,0 +1,6 @@
+{
+  "name": "Romantic Vintage Love Letter & Music Player",
+  "description": "An interactive romantic vintage website featuring a hand-crafted letter reveal, blooming rose transition, vintage cassette player, and customizable songs for your special person.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
