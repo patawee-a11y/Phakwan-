@@ -2,7 +2,6 @@ import { SiteConfig } from '../types';
 import { extractYouTubeId } from '../utils/youtube';
 
 export const DEFAULT_CONFIG: SiteConfig = {
-  // Scene A: The Letter
   recipientName: 'Phakwan',
   senderName: 'จากคนึงหา',
   envelopeTitle: 'A little letter for you',
@@ -12,12 +11,10 @@ export const DEFAULT_CONFIG: SiteConfig = {
   letterStampText: 'จดหมายพิเศษ',
   letterSignoffText: 'ด้วยรักทั้งหมดของหัวใจ',
 
-  // Scene B: Flower Transition
   flowerTitle: 'ดอกไม้บานเพื่อเธอ...',
   flowerSubtitle: 'สวนแห่งท่วงทำนองที่ค่อย ๆ คลี่บาน',
   flowerSkipText: 'ข้ามไปหน้าเพลง →',
 
-  // Scene C: Songs Page
   journalTagText: '· สมุดบันทึกวินเทจ',
   songsKickerText: 'SIDE A · ท่วงทำนองหวานซึ้ง · มอบให้เธอคนเดียว',
   songsTitle: 'Songs for you',
@@ -30,7 +27,6 @@ export const DEFAULT_CONFIG: SiteConfig = {
   cassetteReadyText: 'เทปพร้อมเล่น',
   cassettePauseText: 'หยุดชั่วคราว',
 
-  // Tracklist
   tracklistTitle: 'รายการเพลงในม้วนเทป',
   tracklistSubtitle: 'เพลงที่คัดสรรมาให้เธอ',
   playlist: [
@@ -63,7 +59,6 @@ export const DEFAULT_CONFIG: SiteConfig = {
     },
   ],
 
-  // Special Letter Card
   specialLetterTag: 'จดหมายจากใจ',
   specialLetterTitle: 'ถึงเธอ... คนที่แสนพิเศษ',
   specialMessage: `ทุกช่วงเวลาที่เงียบสงบจะอบอุ่นขึ้นเสมอเมื่อคิดถึงเธอ
@@ -73,16 +68,13 @@ export const DEFAULT_CONFIG: SiteConfig = {
 ขอบคุณที่เข้ามาเป็นส่วนที่แสนหวานที่สุดในชีวิตของฉันเสมอมา`,
   specialLetterSignoff: 'รักและคิดถึงเสมอ,',
 
-  // Memory Photo Card (Bottom)
   memoryCardTitle: 'ภาพความทรงจำของเรา',
   memoryCardQuote: '"ความทรงจำบางอย่าง ก็เหมือนดอกไม้แห้งที่ไม่เคยสูญเสียความงดงาม"',
   memoryCardPhotoUrl: '/src/assets/images/vintage_pressed_roses_1792873677915.jpg',
 
-  // Footer
   footerTitle: 'สร้างสรรค์ด้วยความรักและท่วงทำนองวินเทจ',
   footerSubtitle: 'ความทรงจำที่เก็บไว้เพื่อเธอคนเดียวเสมอไป',
 
-  // Typography
   fontPreset: 'minimal_chic',
   fontFamilyBody: 'Prompt',
   fontFamilyHandwriting: 'Charm',
@@ -95,7 +87,6 @@ export function loadSavedConfig(): SiteConfig {
   if (typeof window === 'undefined') return DEFAULT_CONFIG;
 
   try {
-    // 1. Check path slug or query param (e.g. /phakwan or ?to=phakwan or ?name=phakwan)
     const rawPath = window.location.pathname.replace(/^\/+|\/+$/g, '').toLowerCase();
     const searchParams = new URLSearchParams(window.location.search);
     const toParam = searchParams.get('to') || searchParams.get('for') || searchParams.get('name') || searchParams.get('recipient');
@@ -164,29 +155,13 @@ export function generateShareableUrl(config: SiteConfig): string {
     url.searchParams.delete('creator');
     url.searchParams.delete('edit');
     
-    // Ensure recipient name is explicitly visible in the query string
     if (config.recipientName) {
       url.searchParams.set('to', config.recipientName.trim());
     }
 
-    // Only serialize changes (diff) against DEFAULT_CONFIG to keep the URL ultra short!
-    const diff: Partial<SiteConfig> = {};
-    let hasDiff = false;
-
-    (Object.keys(DEFAULT_CONFIG) as (keyof SiteConfig)[]).forEach((key) => {
-      if (JSON.stringify(config[key]) !== JSON.stringify(DEFAULT_CONFIG[key])) {
-        diff[key] = config[key] as any;
-        hasDiff = true;
-      }
-    });
-
-    if (hasDiff) {
-      const json = JSON.stringify(diff);
-      const encoded = btoa(encodeURIComponent(json));
-      url.hash = `conf=${encoded}`;
-    } else {
-      url.hash = '';
-    }
+    const json = JSON.stringify(config);
+    const encoded = btoa(encodeURIComponent(json));
+    url.hash = `conf=${encoded}`;
 
     return url.toString();
   } catch (err) {

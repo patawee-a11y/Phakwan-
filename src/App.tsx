@@ -4,6 +4,7 @@ import { SceneFlowerTransition } from './components/SceneFlowerTransition';
 import { SceneSongs } from './components/SceneSongs';
 import { PersonalizationModal } from './components/PersonalizationModal';
 import { DEFAULT_CONFIG, generateShareableUrl, loadSavedConfig, saveConfigToStorage } from './data/defaultConfig';
+import { saveConfigToProject } from './utils/configExport';
 import { Scene, SiteConfig } from './types';
 import { copyToClipboard } from './utils/clipboard';
 
@@ -88,9 +89,24 @@ export default function App() {
     setScene('letter');
   };
 
-  const handleSaveConfig = (newConfig: SiteConfig) => {
+  const handleSaveConfig = async (newConfig: SiteConfig) => {
     setConfig(newConfig);
     saveConfigToStorage(newConfig);
+
+    try {
+      const result = await saveConfigToProject(newConfig);
+      if (result.success) {
+        setToastMessage('✓ บันทึกลงโค้ดโปรเจกต์ (defaultConfig.ts) เรียบร้อย! ผู้เข้าชมทุกคนจะเห็นข้อความนี้เป็นค่าเริ่มต้น 💌');
+      } else {
+        setToastMessage('✓ บันทึกในเบราว์เซอร์แล้ว! สามารถส่ง "ลิงก์ส่งต่อพร้อมข้อมูล" ให้คนพิเศษ หรือดาวน์โหลดไฟล์ไปอัปเดตบน Vercel ได้เลย 💌');
+      }
+    } catch {
+      setToastMessage('✓ บันทึกการตั้งค่าเรียบร้อยแล้ว 💌');
+    }
+
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 6000);
   };
 
   const handleQuickCopyLink = async () => {

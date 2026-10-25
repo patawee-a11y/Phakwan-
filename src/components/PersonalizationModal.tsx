@@ -1,5 +1,11 @@
 import React, { useRef, useState } from 'react';
 import { DEFAULT_CONFIG, generateShareableUrl } from '../data/defaultConfig';
+import {
+  generateDefaultConfigFileContent,
+  downloadConfigFile,
+  exportConfigAsJson,
+  saveConfigToProject,
+} from '../utils/configExport';
 import { FONT_OPTIONS, FONT_PRESETS, FontOption, FontPreset } from '../data/fonts';
 import { SiteConfig, Song } from '../types';
 import { copyToClipboard } from '../utils/clipboard';
@@ -81,8 +87,12 @@ export const PersonalizationModal: React.FC<PersonalizationModalProps> = ({
   // State
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedCleanLink, setCopiedCleanLink] = useState(false);
+  const [copiedTsCode, setCopiedTsCode] = useState(false);
+  const [isSavingToProject, setIsSavingToProject] = useState(false);
+  const [projectSaveSuccess, setProjectSaveSuccess] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('fonts');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const jsonFileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
 
@@ -216,6 +226,101 @@ export const PersonalizationModal: React.FC<PersonalizationModalProps> = ({
       setCopiedCleanLink(true);
       setTimeout(() => setCopiedCleanLink(false), 3500);
     }
+  };
+
+  const handleDirectSaveToProject = async () => {
+    setIsSavingToProject(true);
+    const currentConfig = buildCurrentConfig();
+    onSave(currentConfig);
+    try {
+      const res = await saveConfigToProject(currentConfig);
+      if (res.success) {
+        setProjectSaveSuccess('✓ บันทึกลง defaultConfig.ts และอัปเดตไฟล์ .ZIP สำเร็จแล้ว!');
+      } else {
+        setProjectSaveSuccess('บันทึกในเครื่องแล้ว (กดดาวน์โหลด defaultConfig.ts ด้านล่างเพื่อนำไปอัปเดต)');
+      }
+    } catch {
+      setProjectSaveSuccess('บันทึกการตั้งค่าเรียบร้อยแล้ว');
+    } finally {
+      setIsSavingToProject(false);
+      setTimeout(() => setProjectSaveSuccess(null), 4500);
+    }
+  };
+
+  const handleDownloadTs = () => {
+    const currentConfig = buildCurrentConfig();
+    downloadConfigFile(currentConfig);
+  };
+
+  const handleCopyTsCode = async () => {
+    const currentConfig = buildCurrentConfig();
+    const code = generateDefaultConfigFileContent(currentConfig);
+    const success = await copyToClipboard(code);
+    if (success) {
+      setCopiedTsCode(true);
+      setTimeout(() => setCopiedTsCode(false), 3000);
+    }
+  };
+
+  const handleExportJson = () => {
+    const currentConfig = buildCurrentConfig();
+    exportConfigAsJson(currentConfig);
+  };
+
+  const handleImportJsonFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (loadEvt) => {
+      try {
+        const parsed = JSON.parse(loadEvt.target?.result as string);
+        if (parsed && typeof parsed === 'object') {
+          if (parsed.recipientName) setRecipientName(parsed.recipientName);
+          if (parsed.senderName) setSenderName(parsed.senderName);
+          if (parsed.envelopeTitle) setEnvelopeTitle(parsed.envelopeTitle);
+          if (parsed.envelopeSubtitle) setEnvelopeSubtitle(parsed.envelopeSubtitle);
+          if (parsed.envelopeOpenButtonText) setEnvelopeOpenButtonText(parsed.envelopeOpenButtonText);
+          if (parsed.letterPreviewLine) setLetterPreviewLine(parsed.letterPreviewLine);
+          if (parsed.letterStampText) setLetterStampText(parsed.letterStampText);
+          if (parsed.letterSignoffText) setLetterSignoffText(parsed.letterSignoffText);
+          if (parsed.flowerTitle) setFlowerTitle(parsed.flowerTitle);
+          if (parsed.flowerSubtitle) setFlowerSubtitle(parsed.flowerSubtitle);
+          if (parsed.flowerSkipText) setFlowerSkipText(parsed.flowerSkipText);
+          if (parsed.journalTagText) setJournalTagText(parsed.journalTagText);
+          if (parsed.songsKickerText) setSongsKickerText(parsed.songsKickerText);
+          if (parsed.songsTitle) setSongsTitle(parsed.songsTitle);
+          if (parsed.songsSubtitle) setSongsSubtitle(parsed.songsSubtitle);
+          if (parsed.cassetteDeckBrandText) setCassetteDeckBrandText(parsed.cassetteDeckBrandText);
+          if (parsed.cassetteSideText) setCassetteSideText(parsed.cassetteSideText);
+          if (parsed.cassetteMixtapeLabel) setCassetteMixtapeLabel(parsed.cassetteMixtapeLabel);
+          if (parsed.cassetteForSomeoneText) setCassetteForSomeoneText(parsed.cassetteForSomeoneText);
+          if (parsed.cassettePlayingText) setCassettePlayingText(parsed.cassettePlayingText);
+          if (parsed.cassetteReadyText) setCassetteReadyText(parsed.cassetteReadyText);
+          if (parsed.tracklistTitle) setTracklistTitle(parsed.tracklistTitle);
+          if (parsed.tracklistSubtitle) setTracklistSubtitle(parsed.tracklistSubtitle);
+          if (parsed.playlist) setPlaylist(parsed.playlist);
+          if (parsed.specialLetterTag) setSpecialLetterTag(parsed.specialLetterTag);
+          if (parsed.specialLetterTitle) setSpecialLetterTitle(parsed.specialLetterTitle);
+          if (parsed.specialMessage) setSpecialMessage(parsed.specialMessage);
+          if (parsed.specialLetterSignoff) setSpecialLetterSignoff(parsed.specialLetterSignoff);
+          if (parsed.memoryCardTitle) setMemoryCardTitle(parsed.memoryCardTitle);
+          if (parsed.memoryCardQuote) setMemoryCardQuote(parsed.memoryCardQuote);
+          if (parsed.memoryCardPhotoUrl) setMemoryCardPhotoUrl(parsed.memoryCardPhotoUrl);
+          if (parsed.footerTitle) setFooterTitle(parsed.footerTitle);
+          if (parsed.footerSubtitle) setFooterSubtitle(parsed.footerSubtitle);
+          if (parsed.fontPreset) setFontPreset(parsed.fontPreset);
+          if (parsed.fontFamilyBody) setFontFamilyBody(parsed.fontFamilyBody);
+          if (parsed.fontFamilyHandwriting) setFontFamilyHandwriting(parsed.fontFamilyHandwriting);
+          if (parsed.fontFamilyDisplay) setFontFamilyDisplay(parsed.fontFamilyDisplay);
+          setProjectSaveSuccess('✓ โหลดการตั้งค่าจากไฟล์ JSON สำเร็จ!');
+          setTimeout(() => setProjectSaveSuccess(null), 3500);
+        }
+      } catch {
+        alert('รูปแบบไฟล์ JSON ไม่ถูกต้อง');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   };
 
   const handleReset = () => {
@@ -1247,6 +1352,84 @@ export const PersonalizationModal: React.FC<PersonalizationModalProps> = ({
         {/* Tab 5: Shareable Surprise Link */}
         {activeTab === 'share' && (
           <div className="mt-4 space-y-3.5 overflow-y-auto pr-1 flex-1">
+            {/* Global Default & Code Persistence Card */}
+            <div className="p-3.5 bg-[#FAF4E8] rounded-xl border-2 border-[#70434B]/30 space-y-2.5 shadow-xs">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 font-bold text-xs text-[#70434B]">
+                  <span>💾</span>
+                  <span>บันทึกข้อความลงไฟล์โค้ด (defaultConfig.ts) ให้ผู้เข้าชมทุกคนเห็นเป็นค่าเริ่มต้น</span>
+                </div>
+                <span className="text-[10px] bg-[#70434B] text-white px-2 py-0.5 rounded-full font-medium">
+                  แนะนำสำหรับ Vercel
+                </span>
+              </div>
+              <p className="text-[11px] text-[#493F39] leading-relaxed">
+                ข้อความที่คุณปรับแต่งจะถูกบันทึกเป็นค่าเริ่มต้นหลักของระบบ เมื่อนำไป Deploy บน Vercel หรือส่งลิงก์หน้าหลัก (เช่น <strong>https://phakwan.vercel.app</strong>) ทุกคนที่เปิดจากมือถือหรืออุปกรณ์อื่นจะเห็นข้อความของคุณทันทีโดยไม่ต้องพึ่งพา LocalStorage ในเครื่องของพวกเขา
+              </p>
+
+              {projectSaveSuccess && (
+                <div className="p-2 bg-[#A4AE8E]/25 border border-[#A4AE8E] text-[#493F39] text-xs rounded-lg font-medium flex items-center gap-1.5 animate-fadeIn">
+                  <span>✨</span>
+                  <span>{projectSaveSuccess}</span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={handleDirectSaveToProject}
+                  disabled={isSavingToProject}
+                  className="px-3 py-2 bg-[#70434B] hover:bg-[#5C363D] disabled:opacity-60 text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                >
+                  <span>💾</span>
+                  <span>{isSavingToProject ? 'กำลังบันทึกลงโปรเจกต์...' : 'บันทึกลงโค้ดโปรเจกต์ทันที'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDownloadTs}
+                  className="px-3 py-2 bg-[#FAF4E8] hover:bg-[#E7D9BE] text-[#70434B] border border-[#70434B]/40 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <span>📥</span>
+                  <span>ดาวน์โหลด defaultConfig.ts</span>
+                </button>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] border-t border-[#D6C4A5]/60">
+                <button
+                  type="button"
+                  onClick={handleCopyTsCode}
+                  className="text-[#70434B] underline hover:text-[#493F39] cursor-pointer flex items-center gap-1"
+                >
+                  <span>📋</span>
+                  <span>{copiedTsCode ? '✓ คัดลอกโค้ดทั้งไฟล์แล้ว!' : 'คัดลอกโค้ด defaultConfig.ts'}</span>
+                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleExportJson}
+                    className="text-[#81856A] hover:text-[#70434B] underline cursor-pointer"
+                  >
+                    📤 สำรองข้อมูล (JSON)
+                  </button>
+                  <span className="text-[#D6C4A5]">|</span>
+                  <button
+                    type="button"
+                    onClick={() => jsonFileInputRef.current?.click()}
+                    className="text-[#81856A] hover:text-[#70434B] underline cursor-pointer"
+                  >
+                    📥 นำเข้าข้อมูล (JSON)
+                  </button>
+                  <input
+                    ref={jsonFileInputRef}
+                    type="file"
+                    accept=".json"
+                    className="hidden"
+                    onChange={handleImportJsonFile}
+                  />
+                </div>
+              </div>
+            </div>
+
             <div className="p-3.5 bg-[#FAF4E8] rounded-xl border border-[#A4AE8E]/40 text-xs text-[#493F39] leading-relaxed">
               <h4 className="font-semibold text-[#70434B] text-sm mb-1 flex items-center gap-1.5">
                 <span>🔒 ความเป็นส่วนตัวเฉพาะคุณ (Creator Only):</span>
@@ -1295,9 +1478,15 @@ export const PersonalizationModal: React.FC<PersonalizationModalProps> = ({
 
             {/* Option 2: Full Shareable URL with live edits */}
             <div className="p-3 bg-white/60 rounded-xl border border-[#D6C4A5]/70 space-y-1.5">
-              <label className="block text-xs font-sans-clean font-medium text-[#70434B]">
-                2. ลิงก์แบบรวมการปรับแต่งละเอียด (Shareable Config URL):
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-sans-clean font-medium text-[#70434B]">
+                  2. ลิงก์ส่งต่อพร้อมข้อมูลทั้งหมด (Shareable Config URL):
+                </label>
+                <span className="text-[10px] text-[#81856A]">เปิดที่ไหนก็เห็นตรงกัน 100% ทันที</span>
+              </div>
+              <p className="text-[11px] text-[#493F39]">
+                ลิงก์นี้จะฝังข้อมูลที่คุณแก้ไขทั้งหมดไว้ในลิงก์ ส่งให้ใครเปิดในมือถือเครื่องอื่นจะเห็นข้อความและรูปภาพของคุณทันทีแม้ยังไม่ได้ Deploy ใหม่
+              </p>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -1409,6 +1598,15 @@ export const PersonalizationModal: React.FC<PersonalizationModalProps> = ({
               className="px-3.5 py-1.5 text-xs rounded-lg text-[#70434B] hover:bg-[#E7D9BE]/50 transition-colors cursor-pointer"
             >
               ยกเลิก
+            </button>
+            <button
+              type="button"
+              onClick={handleDirectSaveToProject}
+              disabled={isSavingToProject}
+              className="px-3 py-1.5 text-xs rounded-lg bg-[#FAF4E8] hover:bg-[#E7D9BE] border border-[#70434B]/40 text-[#70434B] font-medium transition-colors cursor-pointer flex items-center gap-1"
+            >
+              <span>💾</span>
+              <span>{isSavingToProject ? 'กำลังบันทึก...' : 'บันทึกลงโค้ดโปรเจกต์'}</span>
             </button>
             <button
               onClick={handleSave}
